@@ -1,0 +1,25 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+
+# VSCode config
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Databases
+*.db
+
+# Environment variables
+.env

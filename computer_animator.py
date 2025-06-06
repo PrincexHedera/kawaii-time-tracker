@@ -15,7 +15,7 @@ class ComputerAnimator:
 
         self.img_heart = None
         self.img_filled_heart = None
-        self.img_empty_star_heart = None
+        self.img_clover = None
         self.star_images = []  # To keep references to PhotoImages
         self.star_base_images = []  # Store multiple star base images
         self._load_heart_images(heart_image_path_list)
@@ -32,7 +32,7 @@ class ComputerAnimator:
         try:
             self.img_heart = ImageTk.PhotoImage(Image.open(os.path.join(script_dir, "assets", "images", "heart.png")).resize(heart_size, Image.Resampling.LANCZOS))
             self.img_filled_heart = ImageTk.PhotoImage(Image.open(os.path.join(script_dir, "assets", "images", "filled_heart.png")).resize(heart_size, Image.Resampling.LANCZOS))
-            self.img_empty_star_heart = ImageTk.PhotoImage(Image.open(os.path.join(script_dir, "assets", "images", "empty_heart_stars.png")).resize(heart_size, Image.Resampling.LANCZOS))
+            self.img_clover = ImageTk.PhotoImage(Image.open(os.path.join(script_dir, "assets", "images", "clover.png")).resize((40, 40), Image.Resampling.LANCZOS))
             star_filenames = ["stars.png", "stars1.png", "stars2.png", "stars3.png"]
             for filename in star_filenames:
                 image = Image.open(os.path.join(script_dir, "assets", "images", filename)).resize(star_size, Image.Resampling.LANCZOS)
@@ -80,8 +80,8 @@ class ComputerAnimator:
             offset_y = random.uniform(-10, 10)
 
             roll = random.randint(1, 1000)
-            if roll == 1 and self.img_empty_star_heart:
-                heart_img = self.img_empty_star_heart
+            if roll == 1 and self.img_clover:
+                heart_img = self.img_clover
             else:
                 heart_img = random.choice([self.img_heart, self.img_filled_heart])
 

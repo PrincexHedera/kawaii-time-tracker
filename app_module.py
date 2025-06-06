@@ -217,7 +217,9 @@ class TimeTrackerApp:
                     self.animated_gif_item_id,
                     [
                         os.path.join("assets", "images", "heart.png"),
-                        os.path.join("assets", "images", "filled_heart.png")
+                        os.path.join("assets", "images", "filled_heart.png"),
+                        os.path.join("assets", "images", "stars.png"),
+                        os.path.join("assets", "images", "clover.png")
                     ],
                     self.gif_animator,
                     gif_initial_coords
@@ -239,7 +241,7 @@ class TimeTrackerApp:
         self.hours_display_text_id = self.canvas.create_text(200, 360, text=f"Total Hours: {self.hours_to_h_m_format(self.total_hours_worked)}", font=self.main_text_font, fill="#80084A", anchor="n")
 
         # Summary page elements (initially hidden)
-        self.summary_title_id = self.canvas.create_text(200, 50, text="Weekly Study Summary", font=self.title_font, fill="#80084A", anchor="n", state="hidden")
+        self.summary_title_id = self.canvas.create_text(200, 50, text="Weekly Summary", font=self.title_font, fill="#80084A", anchor="n", state="hidden")
         self.summary_text_display_id = self.canvas.create_text(200, 100, text="", font=self.main_text_font, fill="#277445", anchor="n", justify="left", state="hidden")
 
         self.summary_mode = False
@@ -512,18 +514,26 @@ class TimeTrackerApp:
 
 
     def display_weekly_summary(self):
-        weekly_summary = self.get_weekly_hours_summary()
+        def week_range_from_iso(iso_year_week: str):
+            year, week = map(int, iso_year_week.split('-W'))
+            start = datetime.strptime(f'{year}-W{week}-1', "%Y-W%W-%w")
+            end = start + timedelta(days=6)
+            return start, end
 
+        weekly_summary = self.get_weekly_hours_summary()
         summary_text = ""
+
         if not weekly_summary:
             summary_text = "Nothing's here..."
         else:
-            sorted_weeks = sorted(weekly_summary.keys())
-            for week_key in sorted_weeks:
-                hours = weekly_summary[week_key]
-                summary_text += f"{week_key}: {self.hours_to_h_m_format(hours)}\n"
+            for week_key in sorted(weekly_summary.keys()):
+                start, end = week_range_from_iso(week_key)
+                date_range = f"{start.month}/{start.day}/{start.strftime('%y')}-{end.month}/{end.day}/{end.strftime('%y')}"
+                hours = self.hours_to_h_m_format(weekly_summary[week_key])
+                summary_text += f"{date_range}: {hours}\n"
 
         self.canvas.itemconfig(self.summary_text_display_id, text=summary_text)
+
 
     def toggle_summary_display(self, *args):
         self.summary_mode = not self.summary_mode
