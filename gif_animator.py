@@ -55,6 +55,9 @@ class GIFAnimator:
             self.master.after_cancel(self.animation_id)
             self.animation_id = None
         self.is_playing = False # Ensure this is always set
+        self.frame_index = 0
+        if self.is_loadable():
+            self.canvas.itemconfig(self.item_id, image=self.frames[0])
 
     def _animate_gif(self):
         if not self.is_playing:

@@ -1,4 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
+# At the top
+from PyInstaller.utils.hooks import collect_data_files
 
 
 a = Analysis(
@@ -15,6 +17,8 @@ a = Analysis(
     optimize=0,
 )
 pyz = PYZ(a.pure)
+
+datas = collect_data_files('assets', include_py_files=False)
 
 exe = EXE(
     pyz,
@@ -36,3 +40,4 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+

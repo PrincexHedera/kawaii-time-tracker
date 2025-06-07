@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from gif_animator import GIFAnimator
 from tkextrafont import Font
 import os
+import sys
 import tkinter.messagebox
 import sqlite3
 from collections import defaultdict
@@ -16,66 +17,54 @@ class TimeTrackerApp:
         master.geometry("400x500")
         master.resizable(False, False)
         master.configure(bg="#FFB6C1")
-
         master.wm_attributes('-topmost', True)
 
         self.clock_in_time = None
         self.total_hours_worked = 0.0
 
-        script_dir = os.path.dirname(__file__)
-        self.db_file_path = os.path.join(script_dir, "study_sessions.db")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.script_dir = script_dir
 
+        self.db_file_path = os.path.join(script_dir, "study_sessions.db")
         self._init_database()
         self._load_data()
 
-        # --- Load Custom Fonts ---
+        # --- Load and Register Custom Fonts ---
         self.minecraft_font_path = os.path.join(script_dir, "assets", "fonts", "Minecraft.ttf")
-        self.minecraft_font_family_name = "Minecraft"
-
         self.pixel_font_path = os.path.join(script_dir, "assets", "fonts", "pixel.ttf")
+
+        # Attempt to load fonts using tkextrafont
+        try:
+            Font(file=self.minecraft_font_path, family="Minecraft")
+            Font(file=self.pixel_font_path, family="Pixelify Sans Regular")
+        except Exception as e:
+            print(f"Font registration error: {e}")
+
+        # Fallback defaults
+        self.minecraft_font_family_name = "Minecraft"
         self.pixel_font_family_name = "Pixelify Sans Regular"
 
-        self.title_font = ("Arial", 24, "bold") # Default fallback
-        self.main_text_font = ("Arial", 16)   # Default fallback
-        self.button_text_font = ("Arial", 16, "bold") # Default fallback
-        self.small_button_font = ("Arial", 12) # Default fallback
-        self.star_font = ("Arial", 12)       # Default fallback
+        # Set font styles with fallbacks if font is not registered
+        available_fonts = self.master.tk.call("font", "families")
 
-        try:
-            # Register fonts. tkextrafont will return the actual family name used.
-            # We don't assign to self.font directly here, but verify registration.
-            dummy_minecraft_font = Font(file=self.minecraft_font_path, family=self.minecraft_font_family_name, size=10)
-            dummy_pixel_font = Font(file=self.pixel_font_path, family=self.pixel_font_family_name, size=10)
-
-            # Assign actual font objects if registration was successful
-            self.title_font = Font(family=self.minecraft_font_family_name, size=24, weight="bold")
-            self.main_text_font = Font(family=self.minecraft_font_family_name, size=13)
-            self.button_text_font = Font(family=self.minecraft_font_family_name, size=15)
-            self.small_button_font = Font(family=self.minecraft_font_family_name, size=13)
-            self.star_font = Font(family=self.pixel_font_family_name, size=12)
-
-            # Check if the font family name returned by actual() matches the desired name
-            if dummy_minecraft_font.actual('family') != self.minecraft_font_family_name:
-                print(f"Font Error: Minecraft font registration failed. Expected '{self.minecraft_font_family_name}', but got '{dummy_minecraft_font.actual('family')}'. Falling back to system fonts for Minecraft-related fonts.")
-                self.title_font = ("Arial", 24, "bold")
-                self.main_text_font = ("Arial", 16)
-                self.button_text_font = ("Arial", 16, "bold")
-                self.small_button_font = ("Arial", 12)
-
-            if dummy_pixel_font.actual('family') != self.pixel_font_family_name:
-                print(f"Font Error: Pixelify Sans font registration failed. Expected '{self.pixel_font_family_name}', but got '{dummy_pixel_font.actual('family')}'. Falling back to system fonts for Pixelify Sans-related fonts.")
-                self.star_font = ("Arial", 12)
-
-        except Exception as e:
-            print(f"Font Error: Could not load custom fonts. Error: {e}. Falling back to system fonts.")
-            # If any exception occurs during font loading, ensure all fonts fallback to Arial
+        if self.minecraft_font_family_name in available_fonts:
+            self.title_font = (self.minecraft_font_family_name, 24, "bold")
+            self.main_text_font = (self.minecraft_font_family_name, 16)
+            self.button_text_font = (self.minecraft_font_family_name, 16, "bold")
+            self.small_button_font = (self.minecraft_font_family_name, 12)
+        else:
+            print("Warning: Minecraft font not registered. Falling back to Arial.")
             self.title_font = ("Arial", 24, "bold")
             self.main_text_font = ("Arial", 16)
             self.button_text_font = ("Arial", 16, "bold")
             self.small_button_font = ("Arial", 12)
+
+        if self.pixel_font_family_name in available_fonts:
+            self.star_font = (self.pixel_font_family_name, 12)
+        else:
+            print("Warning: Pixel font not registered. Falling back to Arial.")
             self.star_font = ("Arial", 12)
-
-
+                              
         # --- Load and prepare background image ---
         self.background_image_path = os.path.join(script_dir, "assets", "images", "pink_background.jpg")
         self.background_photo = None
@@ -106,7 +95,6 @@ class TimeTrackerApp:
 
         self.gif_animator = GIFAnimator(self.master, self.canvas, self.animated_gif_item_id,
                                         os.path.join("assets", "images", "pink_computer.gif"), gif_display_width, gif_display_height)
-
 
 
         # --- Load button images ---
